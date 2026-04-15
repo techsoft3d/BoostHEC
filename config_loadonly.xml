@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<A3DLibChecker LoadFromFileDisabled="false">
+  <ReaderLog clean="0" />
+  <Process>
+    <!-- No check functions: pure model loading benchmark -->
+  </Process>
+</A3DLibChecker>

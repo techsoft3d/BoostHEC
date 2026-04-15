@@ -1,0 +1,20 @@
+\\LYONTS3D-NAS\Data\ug\clients\sullair\poubelle\a4v_1.prt
+\\LYONTS3D-NAS\Data\3Dxml\Software-data\CV5R20\3Dxml\TestsLib\Sphere\ug\Sphere.prt
+\\LYONTS3D-NAS\Data\tmp\crp\RItem\Coquilette.prt
+\\LYONTS3D-NAS\Data\Tests_Files\PMI\PMI_3D\UG\tests\PMI\feature_control_frame\angularity.prt
+\\LYONTS3D-NAS\Support\TS3D\18573\error_b.prt
+\\LYONTS3D-NAS\Data\ug\Software-data\UG-NX-7.5\tests\pmi\1426295\Flachkopfschraube_M8X10.prt
+\\LYONTS3D-NAS\Data\2d\Unigraphics\Tests-drawing-UG\Fichiers_dev\Symbols and kind of cotation\Tolerances and Instances Options 1.prt
+\\LYONTS3D-NAS\Support\TS3D\18694\gom_part_with_PMI.prt
+\\LYONTS3D-NAS\Data\demo\1_Lecture_Ecriture\CAT2UG\006614A.prt
+\\LYONTS3D-NAS\Data\ug\clients\valeo\rodach\filtergeh_opel_rhd\24409252.geo_fin001.001999.prt
+\\LYONTS3D-NAS\Data\demo\UNIGRAPHICS\mdeg4033.prt
+\\LYONTS3D-NAS\Data\tmp\fcr\support\N2181\0408hein-frontcover.prt
+\\LYONTS3D-NAS\Data\ug\assembly\tst-aco-suppressed-NX3\Top.prt
+\\LYONTS3D-NAS\Data\tmp\fcr\support\N2181\resauve_1\resauve_12.prt
+\\LYONTS3D-NAS\Support\TS3D\27125\3. NX\Assy_mm.prt
+\\LYONTS3D-NAS\Data\ug\exemples\CHINON\Atlantic\Atlantic-Strobe_Assy\Strobe-Assy.prt
+\\LYONTS3D-NAS\Data\ug\assembly\fixture\finished_assm.prt
+\\LYONTS3D-NAS\Data\demo\UNIGRAPHICS\Engine\fixtures.prt
+\\LYONTS3D-NAS\Data\ug\Software-data\UG-NX-12\samples\insp_general_assy_Renishaw_Equator_300_english.prt
+\\LYONTS3D-NAS\Support\TS3D\21477\kisters_sample_NX_52020_bosal\_000030840001_00A.prt

@@ -1,0 +1,5 @@
+﻿<A3DLibChecker LoadFromFileDisabled="true">
+  <Process>
+    <Function value="231" option="OutputFile=filelist_Export_3MF.txt.deps.ndjson"/>
+  </Process>
+</A3DLibChecker>

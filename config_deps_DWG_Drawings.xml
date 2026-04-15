@@ -1,0 +1,5 @@
+﻿<A3DLibChecker LoadFromFileDisabled="true">
+  <Process>
+    <Function value="231" option="OutputFile=filelist_DWG_Drawings.txt.deps.ndjson"/>
+  </Process>
+</A3DLibChecker>

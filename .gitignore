@@ -1,0 +1,30 @@
+# Local prefetch cache (can be large)
+cache/
+
+# HEC output directories
+out/
+deps_out/
+
+# Generated dependency NDJSON files (regenerate with run_all_deps.ps1)
+deps/*.ndjson
+
+# Test reports
+stats/
+
+# Log and timing files
+*.log
+*.csv
+CRTDebug.txt
+prefetch_child_debug.log
+
+# Windows shortcuts
+*.lnk
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+*.pyo
+
+# Claude Code local settings
+.claude/
