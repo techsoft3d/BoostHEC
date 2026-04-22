@@ -1,4 +1,4 @@
-"""
+﻿"""
 Generate per-filelist detailed test duration dashboard.
 Parses output.xml from NAS build folders to extract per-file test durations,
 then produces an HTML dashboard with charts over time.
@@ -90,6 +90,14 @@ DATE_MAP = {
     "5675-9538c500": "2026-04-10",
     "5683-6950a04b": "2026-04-11", "5684-6950a04b": "2026-04-12",
     "5685-6950a04b": "2026-04-13", "5693-5b14060a": "2026-04-14",
+    # avril 2026
+    "5697-d9fa86b8": "2026-04-15",
+    "5702-5a14d16f": "2026-04-16",
+    "5713-7cc05f39": "2026-04-18",
+    "5714-7cc05f39": "2026-04-19",
+    "5715-7cc05f39": "2026-04-20",
+    "5718-e0587709": "2026-04-21",
+    "5728-c6865d81": "2026-04-22",
 }
 
 
@@ -322,7 +330,7 @@ def generate_html(all_data):
 <body>
 <div class="container">
     <h1>HEC Per-Filelist Detailed Test Durations</h1>
-    <p>Jan 1 to Apr 14, 2026 — Per-file durations within each filelist, across platforms.
+    <p>Jan 1 to avr. 22, 2026 — Per-file durations within each filelist, across platforms.
        Top 50 slowest tests shown per filelist/platform.</p>
 
     <div class="fl-tab-bar">

@@ -1,11 +1,11 @@
-"""
+﻿"""
 Generate static PNG charts from HEC test data for mobile/offline viewing.
 
 Outputs to docs/charts/ — high-DPI, phone-readable.
 Run from repo root:  python analytics/generate_pngs.py
 
 Charts produced:
-  per_test_overview.png              — total run duration per platform, Jan–Apr 2026
+  per_test_overview.png              — total run duration per platform, Jan-avr. 2026
   per_test_slowest_windows.png       — top-30 slowest tests (Windows VS2019)
   per_test_slowest_linux.png         — top-30 slowest tests (Linux GCC)
   per_test_slowest_mac.png           — top-30 slowest tests (Mac LLVM)
@@ -87,6 +87,14 @@ DATE_MAP = {
     "5675-9538c500": "2026-04-10",
     "5683-6950a04b": "2026-04-11", "5684-6950a04b": "2026-04-12",
     "5685-6950a04b": "2026-04-13", "5693-5b14060a": "2026-04-14",
+    # avril 2026
+    "5697-d9fa86b8": "2026-04-15",
+    "5702-5a14d16f": "2026-04-16",
+    "5713-7cc05f39": "2026-04-18",
+    "5714-7cc05f39": "2026-04-19",
+    "5715-7cc05f39": "2026-04-20",
+    "5718-e0587709": "2026-04-21",
+    "5728-c6865d81": "2026-04-22",
 }
 
 SORTED_BUILDS = sorted(DATE_MAP, key=lambda b: int(b.split("-")[0]))
@@ -168,7 +176,7 @@ def load_stat_platform(prefix):
 def chart_per_test_overview():
     """3-panel timeline — total run duration per platform."""
     fig, axes = plt.subplots(3, 1, figsize=(13, 10), sharex=False)
-    fig.suptitle("HEC Nightly Run Duration  ·  Jan 1 – Apr 14, 2026",
+    fig.suptitle("HEC Nightly Run Duration  ·  Jan 1 - avr. 22, 2026",
                  fontsize=15, fontweight="bold", y=0.99)
 
     for ax, (pname, (prefix, color)) in zip(axes, STAT_PLATFORMS.items()):
@@ -240,7 +248,7 @@ def chart_per_test_slowest(short_name, prefix, color, top_n=30):
     ax.set_yticklabels(labels, fontsize=9.5)
     ax.invert_yaxis()
     ax.set_xlabel("Mean Duration (seconds)", fontsize=11)
-    ax.set_title(f"{short_name}  ·  Top {len(labels)} Slowest Tests  ·  Jan–Apr 2026",
+    ax.set_title(f"{short_name}  ·  Top {len(labels)} Slowest Tests  ·  Jan-avr. 2026",
                  fontsize=13, fontweight="bold", color=color)
     ax.xaxis.grid(True, alpha=0.35)
     ax.set_axisbelow(True)
@@ -300,7 +308,7 @@ def chart_filelist_overview():
     """5-panel timeline — total filelist duration (Windows) over time."""
     fig, axes = plt.subplots(len(FILELISTS), 1,
                              figsize=(13, 3.8 * len(FILELISTS)), sharex=False)
-    fig.suptitle("HEC Per-Filelist Total Duration (Windows)  ·  Jan–Apr 2026",
+    fig.suptitle("HEC Per-Filelist Total Duration (Windows)  ·  Jan-avr. 2026",
                  fontsize=14, fontweight="bold", y=0.998)
 
     win_path = FILELIST_PLATFORMS["Windows"][0]
@@ -391,7 +399,7 @@ def chart_filelist_slowest(filelist, top_n=25):
     ax.set_xlabel("Mean Duration (seconds)", fontsize=11)
     fl_color = FILELIST_COLORS.get(filelist, "#333")
     ax.set_title(
-        f"{filelist.replace('_', ' ')}  ·  Top {n_tests} Slowest Files  ·  Jan–Apr 2026",
+        f"{filelist.replace('_', ' ')}  ·  Top {n_tests} Slowest Files  ·  Jan-avr. 2026",
         fontsize=12, fontweight="bold", color=fl_color)
     ax.legend(fontsize=10, loc="lower right", framealpha=0.9)
     ax.xaxis.grid(True, alpha=0.35)
