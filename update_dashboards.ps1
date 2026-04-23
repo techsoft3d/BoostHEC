@@ -185,12 +185,14 @@ $lastMonthAbbr = $last.LastWriteTime.ToString("MMM")           # "Apr"
 $lastYear      = $last.LastWriteTime.ToString("yyyy")          # "2026"
 
 # Regex patterns for the three date-range string styles used across the scripts:
-#   generate_stats.py, generate_filelist_stats.py  -> "Jan 1 to Apr 14, 2026"
+#   generate_stats.py, generate_filelist_stats.py  -> "Jan 1 to Apr 14, 2026"  (or locale month)
 #   generate_pngs.py (suptitle)                    -> "Jan 1 - Apr 14, 2026" or with en-dash
-#   generate_pngs.py (axis titles)                 -> "Jan-Apr 2026" or with en-dash
-$patternFull    = 'Jan 1 to (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}'
-$patternDash    = 'Jan 1 [–\-] (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}'
-$patternMonths  = '(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[–\-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}'
+#   generate_pngs.py (axis / category titles)      -> "Jan-Apr 2026" or with en-dash
+# Patterns use a locale-neutral month match ([A-Za-z]{2,5}\.?) so they keep working
+# on non-English Windows locales (e.g. French "avr." for April).
+$patternFull    = 'Jan 1 to [A-Za-z]{2,5}\.? \d{1,2}, \d{4}'
+$patternDash    = 'Jan 1 [–\-] [A-Za-z]{2,5}\.? \d{1,2}, \d{4}'
+$patternMonths  = 'Jan[–\-][A-Za-z]{2,5}\.? \d{4}'
 
 foreach ($relPath in $AnalyticsScripts) {
     $fullPath = Join-Path $RepoDir $relPath

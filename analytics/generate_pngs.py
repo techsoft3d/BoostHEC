@@ -4,13 +4,14 @@ Generate static PNG charts from HEC test data for mobile/offline viewing.
 Outputs to docs/charts/ — high-DPI, phone-readable.
 Run from repo root:  python analytics/generate_pngs.py
 
+All filelists are auto-discovered from the NAS at runtime (falls back to
+the original 5 if the NAS is not mounted).
+
 Charts produced:
-  per_test_overview.png              — total run duration per platform, Jan-avr. 2026
-  per_test_slowest_windows.png       — top-30 slowest tests (Windows VS2019)
-  per_test_slowest_linux.png         — top-30 slowest tests (Linux GCC)
-  per_test_slowest_mac.png           — top-30 slowest tests (Mac LLVM)
-  filelist_overview.png              — total filelist duration over time (Windows)
-  filelist_<NAME>_slowest.png        — top-25 slowest files per filelist, all platforms
+  per_test_overview.png                    — total run duration per platform
+  per_test_slowest_{windows,linux,mac}.png — top-30 slowest tests per platform
+  filelist_overview_{import,export,...}.png — overview grids per filelist category
+  filelist_<NAME>_slowest.png              — top-25 slowest files per filelist (all platforms)
 """
 
 import os
@@ -115,15 +116,39 @@ FILELIST_PLATFORMS = {
     "Mac x86_64":("Macos/x86_64/HEC",            "#16a085"),
 }
 
-FILELISTS = ["Import_NX", "Import_STEP", "Import_CATIA_V5", "Import_JT", "Import_ACIS"]
+# 36-color palette — assigned by filelist name hash for stable, distinct colors
+_COLOR_POOL = [
+    "#2980b9", "#16a085", "#27ae60", "#8e44ad", "#e67e22", "#e74c3c", "#f39c12", "#1abc9c",
+    "#d35400", "#2471a3", "#117a65", "#1e8449", "#6c3483", "#ca6f1e", "#922b21", "#b7950b",
+    "#148f77", "#76448a", "#1f618d", "#a93226", "#935116", "#7d3c98", "#d4ac0d", "#884ea0",
+    "#1a9482", "#196f3d", "#5b2c6f", "#7b241c", "#17a589", "#1d8348", "#145a32", "#4a235a",
+    "#0e6655", "#29b06e", "#7f8c8d", "#c0392b",
+]
 
-FILELIST_COLORS = {
-    "Import_NX":       "#2980b9",
-    "Import_STEP":     "#c0392b",
-    "Import_CATIA_V5": "#27ae60",
-    "Import_JT":       "#8e44ad",
-    "Import_ACIS":     "#d35400",
-}
+
+def _color_for(fl):
+    """Return a stable, distinct color for a filelist name."""
+    h = sum(ord(c) * (i + 1) for i, c in enumerate(fl))
+    return _COLOR_POOL[h % len(_COLOR_POOL)]
+
+
+def discover_filelists():
+    """Auto-discover all filelists with output.xml on the Windows platform from the NAS."""
+    sorted_builds = sorted(DATE_MAP, key=lambda b: int(b.split("-")[0]), reverse=True)
+    plat_path = os.path.join("Windows", "x86_64", "HEC")
+    for build_id in sorted_builds:
+        hec_dir = os.path.join(NAS_DIR, build_id, "HEC_Report", plat_path)
+        if not os.path.isdir(hec_dir):
+            continue
+        result = sorted(
+            d for d in os.listdir(hec_dir)
+            if os.path.isdir(os.path.join(hec_dir, d)) and
+               os.path.exists(os.path.join(hec_dir, d, "output.xml"))
+        )
+        if result:
+            return result
+    # Fallback to original five filelists if NAS not accessible
+    return ["Import_NX", "Import_STEP", "Import_CATIA_V5", "Import_JT", "Import_ACIS"]
 
 
 def to_dt(date_str):
@@ -306,48 +331,69 @@ def load_filelist_builds(filelist, plat_path):
     return builds
 
 
-def chart_filelist_overview():
-    """5-panel timeline — total filelist duration (Windows) over time."""
-    fig, axes = plt.subplots(len(FILELISTS), 1,
-                             figsize=(13, 3.8 * len(FILELISTS)), sharex=False)
-    fig.suptitle("HEC Per-Filelist Total Duration (Windows)  ·  Jan-avr. 2026",
-                 fontsize=14, fontweight="bold", y=0.998)
-
+def chart_filelist_overview(filelists, title, outfile, ncols=4):
+    """Grid overview — total filelist duration (Windows) over time, ncols per row."""
     win_path = FILELIST_PLATFORMS["Windows"][0]
 
-    for ax, fl in zip(axes, FILELISTS):
-        color = FILELIST_COLORS[fl]
+    # Pre-load only filelists that have data
+    fl_builds = []
+    for fl in filelists:
         builds = load_filelist_builds(fl, win_path)
-        if not builds:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center",
-                    transform=ax.transAxes, color="#999", fontsize=11)
-            ax.set_title(fl.replace("_", " "), fontsize=11,
-                         color=color, fontweight="bold")
-            continue
+        if builds:
+            fl_builds.append((fl, builds))
 
+    if not fl_builds:
+        print(f"  [{outfile}] no data, skipped.")
+        return
+
+    n      = len(fl_builds)
+    nrows  = (n + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows, ncols,
+                             figsize=(4.5 * ncols, 2.6 * nrows),
+                             sharex=False)
+    # Normalize axes to a flat list
+    if nrows == 1 and ncols == 1:
+        flat_axes = [axes]
+    elif nrows == 1:
+        flat_axes = list(axes)
+    elif ncols == 1:
+        flat_axes = list(axes)
+    else:
+        flat_axes = [ax for row in axes for ax in row]
+
+    fig.suptitle(title, fontsize=13, fontweight="bold", y=1.001)
+
+    for i, (fl, builds) in enumerate(fl_builds):
+        ax    = flat_axes[i]
+        color = _color_for(fl)
         dates  = [to_dt(b["date"]) for b in builds]
         totals = [b["data"]["total_elapsed"] for b in builds]
-        mean   = statistics.mean(t for t in totals if t > 0)
+        nonzero = [t for t in totals if t > 0]
+        mean = statistics.mean(nonzero) if nonzero else 0
 
-        ax.fill_between(dates, totals, alpha=0.12, color=color)
-        ax.plot(dates, totals, color=color, linewidth=2,
-                marker="o", markersize=4, zorder=3)
-        ax.axhline(mean, color="#e74c3c", linewidth=1.5,
-                   linestyle="--", alpha=0.85, label=f"Mean {mean:.0f} s")
-        ax.set_ylabel("Seconds", fontsize=10)
-        ax.set_title(
-            f"{fl.replace('_', ' ')}  ·  {len(builds)} builds  ·  mean {mean:.0f} s",
-            fontsize=11, color=color, fontweight="bold", pad=3)
-        ax.legend(fontsize=9, loc="upper right", framealpha=0.9)
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=0, interval=2))
-        ax.tick_params(axis="x", labelsize=8.5, rotation=25)
-        ax.tick_params(axis="y", labelsize=9)
-        ax.set_xlim(min(dates), max(dates))
-        ax.yaxis.grid(True, alpha=0.35)
+        ax.fill_between(dates, totals, alpha=0.14, color=color)
+        ax.plot(dates, totals, color=color, linewidth=1.5,
+                marker="o", markersize=2.5, zorder=3)
+        if mean > 0:
+            ax.axhline(mean, color="#e74c3c", linewidth=1,
+                       linestyle="--", alpha=0.8)
+        ax.set_title(fl.replace("_", " "), fontsize=8,
+                     color=color, fontweight="bold", pad=2)
+        ax.tick_params(axis="x", labelsize=6, rotation=20)
+        ax.tick_params(axis="y", labelsize=6)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        if dates:
+            ax.set_xlim(min(dates), max(dates))
+        ax.yaxis.grid(True, alpha=0.3)
+        ax.set_ylabel("s", fontsize=7)
 
-    fig.tight_layout(rect=[0, 0, 1, 0.997])
-    _save(fig, "filelist_overview.png")
+    # Hide unused panels
+    for i in range(len(fl_builds), len(flat_axes)):
+        flat_axes[i].set_visible(False)
+
+    fig.tight_layout(rect=[0, 0, 1, 0.998])
+    _save(fig, outfile)
 
 
 def chart_filelist_slowest(filelist, top_n=25):
@@ -399,7 +445,7 @@ def chart_filelist_slowest(filelist, top_n=25):
     ax.set_yticklabels(ranked, fontsize=8.5)
     ax.invert_yaxis()
     ax.set_xlabel("Mean Duration (seconds)", fontsize=11)
-    fl_color = FILELIST_COLORS.get(filelist, "#333")
+    fl_color = _color_for(filelist)
     ax.set_title(
         f"{filelist.replace('_', ' ')}  ·  Top {n_tests} Slowest Files  ·  Jan-avr. 2026",
         fontsize=12, fontweight="bold", color=fl_color)
@@ -430,15 +476,40 @@ if __name__ == "__main__":
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn-v0_8-whitegrid")
 
+    print("\n-- Discovering filelists from NAS --")
+    all_filelists = discover_filelists()
+    print(f"  {len(all_filelists)} filelists found")
+
+    # Group by prefix category
+    import_fls       = [fl for fl in all_filelists if fl.startswith("Import_")]
+    export_fls       = [fl for fl in all_filelists if fl.startswith("Export_")]
+    tess_fls         = [fl for fl in all_filelists if fl.startswith("Tessellation_")]
+    other_fls        = [fl for fl in all_filelists
+                        if not fl.startswith(("Import_", "Export_", "Tessellation_"))]
+
     print("\n-- Per-test duration charts --")
     chart_per_test_overview()
     for pname, (prefix, color) in STAT_PLATFORMS.items():
         short = pname.split()[0]   # "Windows" / "Linux" / "Mac"
         chart_per_test_slowest(short, prefix, color)
 
-    print("\n-- Per-filelist charts --")
-    chart_filelist_overview()
-    for fl in FILELISTS:
+    print("\n-- Per-filelist overview charts (by category) --")
+    for cat_name, cat_fls in [
+        ("Import",       import_fls),
+        ("Export",       export_fls),
+        ("Tessellation", tess_fls),
+        ("Other",        other_fls),
+    ]:
+        if not cat_fls:
+            continue
+        title  = (f"HEC {cat_name} Filelists -- Total Duration (Windows)"
+                  f"  .  Jan-avr. 2026")
+        fname  = f"filelist_overview_{cat_name.lower()}.png"
+        print(f"  {cat_name}: {len(cat_fls)} filelists -> {fname}")
+        chart_filelist_overview(cat_fls, title, fname)
+
+    print("\n-- Per-filelist slowest-files charts --")
+    for fl in all_filelists:
         chart_filelist_slowest(fl)
 
     pngs = sorted(OUT_DIR.glob("*.png"))
